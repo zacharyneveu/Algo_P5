@@ -1,0 +1,3 @@
+﻿  p5.cpp
+c:\users\zachary\googledrive\documents\algorithms\algo_p5\p5.cpp(115): warning C4101: 'x': unreferenced local variable
+c:\users\zachary\googledrive\documents\algorithms\algo_p5\p5.cpp(40): error C4716: 'maze::getMap': must return a value
