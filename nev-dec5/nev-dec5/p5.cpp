@@ -30,14 +30,26 @@ class maze
 };
 
 void maze::setMap(int i, int j, int n)
-// Set mapping from maze cell (i,j) to graph node n. 
+// Set mapping from maze cell (i,j) to graph node n.
 {
+	map[i][j] = n;
 }
 
 int maze ::getMap(int i, int j) const
 // Return mapping of maze cell (i,j) in the graph.
 {
-	return 0;
+	//debug:
+	cout<<"map rows: "<<map.rows()<<endl;
+	cout<<"r: "<<i<<endl;
+	cout<<"map cols: "<<map.cols()<<endl;
+	cout<<"c: "<<j<<endl;
+
+	if(map.rows() > i && map.cols() > j && i >= 0 && j >= 0)
+	{
+		return map[i][j];
+	}
+	//if out of range or filled
+	return -1;
 }
 
 maze::maze(ifstream &fin)
@@ -88,7 +100,7 @@ void maze::print(int goalI, int goalJ, int currI, int currJ)
 	       if (value[i][j])
 		  cout << " ";
 	       else
-		  cout << "X";	  
+		  cout << "X";
       }
       cout << endl;
    }
@@ -107,15 +119,62 @@ bool maze::isLegal(int i, int j)
 void maze::mapMazeToGraph(graph &g)
 // Create a graph g that represents the legal moves in the maze m.
 {
-}
+	//set maps for the whole maze
+	int n = 0;
+	for (int r=0; r<rows; r++)
+	{
+		for (int c=0; c<cols; c++)
+		{
+			if(value[r][c] == true)
+			{
+				setMap(r, c, n); //set map
+				node newNode;
+				newNode.setNode(n, 0, false, false);
+				g.addNode(newNode);
+				n++; //increment n
+			}
+		}
+	}
 
+	//r and c iterate over all squares in maze
+	for (int r=0; r<rows; r++)
+	{
+		for (int c=0; c<cols; c++)
+		{
+			int self = getMap(r, c);
+
+			if(self >= 0)
+			{
+				//i and j iterate over neighbors
+				for (int i=-1; i<=1; i++)
+				{
+					for (int j=-1; j<=1; j++)
+					{
+						int neighbor = getMap(r+i, c+j);
+
+						if (i == 0 && j == 0) //eliminate self loops
+						{
+							continue;
+						}
+
+						else if(neighbor >= 0)
+						{
+							//add edges in both directions
+							g.addEdge(neighbor, self);
+							g.addEdge(self, neighbor);
+						}
+					}
+				}
+			}
+		}
+	}
+}
 
 
 int main()
 {
-   char x;
    ifstream fin;
-   
+
    // Read the maze from the file.
    string fileName = "maze1.txt";
 
@@ -133,12 +192,14 @@ int main()
       while (fin && fin.peek() != 'Z')
       {
          maze m(fin);
+		 m.mapMazeToGraph(g);
+		 cout<<g<<endl;
       }
 
 
-   } 
-   catch (indexRangeError &ex) 
-   { 
+   }
+   catch (indexRangeError &ex)
+   {
       cout << ex.what() << endl;
 	  system("pause");
 	  exit(1);

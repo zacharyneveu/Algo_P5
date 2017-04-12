@@ -21,13 +21,13 @@ class node
       node();
       node(const node &);
       node &operator=(const node &);
-   
+
       void setId(int i);
       int getId() const;
 
       void setWeight(NodeWeight);
       NodeWeight getWeight() const;
-   
+
       void setNode(int, NodeWeight, bool, bool);
 
       void mark();
@@ -78,16 +78,16 @@ void node::setWeight(NodeWeight w)
 {
    weight = w;
 }
-   
+
 void node::setId(int i)
 // Set node's id to i.  Throws an exception if i < 0.
 {
    if (i < 0)
       throw rangeError("Bad value in node::setId");
-   
+
    id = i;
 }
-   
+
 int node::getId() const
 // Return node's id
 {
@@ -104,7 +104,7 @@ void node::setNode(int id, NodeWeight w = 0, bool m = false, bool v = false)
       mark();
    else
       unMark();
-   
+
    if (v)
       visit();
    else
@@ -150,7 +150,7 @@ bool node::isVisited() const
 
 ostream &operator<<(ostream &ostr, const node &n)
 {
-   ostr << "node: " << n.getId() << " weight: " << n.getWeight() 
+   ostr << "node: " << n.getId() << " weight: " << n.getWeight()
         << " visited: " << n.isVisited() << " marked " << n.isMarked() << endl;
 
    return ostr;
@@ -162,10 +162,10 @@ class edge
       edge();
       edge(int, int, EdgeWeight = 0);
       edge(const edge &);
-      edge &operator=(const edge &);   
+      edge &operator=(const edge &);
 
       void setWeight(EdgeWeight);
-      EdgeWeight getWeight() const; 
+      EdgeWeight getWeight() const;
 
       int getSource() const;
       int getDest() const;
@@ -274,7 +274,7 @@ void edge::setWeight(EdgeWeight w)
 EdgeWeight edge::getWeight() const
 // Return edge weight.
 {
-   return weight;  
+   return weight;
 }
 
 EdgeWeight edge::getSource() const
@@ -347,7 +347,7 @@ ostream &operator<<(ostream &ostr, const edge &e)
 // Print all edge information for a valid edge;
 {
    cout << "edge (" << e.getSource() << "," << e.getDest() << "): ";
-   cout << " weight: " << e.getWeight() << " visited: " << e.isVisited() 
+   cout << " weight: " << e.getWeight() << " visited: " << e.isVisited()
 	<< " marked " << e.isMarked() << endl;
 
    return ostr;
@@ -360,7 +360,7 @@ class graph
    graph(int n);
    graph(ifstream &fin);
    graph(const graph &);
-   graph &operator=(const graph &);   
+   graph &operator=(const graph &);
 
    void addEdge(int i, int j, NodeWeight w = 0);
    void removeEdge(int i, int j);
@@ -380,7 +380,7 @@ class graph
    bool isEdge(NodeType i, NodeType j) const;
    int numNodes() const;
    int numEdges() const;
-   
+
    node &getNode(int);
    const node &getNode(int) const;
    edge &getEdge(int i,int j);
@@ -436,7 +436,7 @@ graph::graph(ifstream &fin)
 {
    int n, i, j, w;
    fin >> n;
-   
+
    // Add nodes.
    for (int i = 0; i < n; i++)
       addNode();
@@ -459,8 +459,8 @@ graph::graph(const graph &g)
    // new nodes.  This avoids the exception that is thrown by
    // node::setId which is called by the node copy constructor.  The
    // temporary node is overwritten later in this function.
-   
-   node tempNode;       
+
+   node tempNode;
    tempNode.setId(0);
 
    nodes.resize(g.numNodes(),tempNode);
@@ -470,12 +470,12 @@ graph::graph(const graph &g)
    for (int i = 0; i < numNodes(); i++)
       nodes[i] = g.nodes[i];
 
-   // Copy the edges using the overloaded assignment operator.  
-   for (int i = 0; i < numNodes(); i++) 
-      for (int j = 0; j < numNodes(); j++) 
-	 edges[i][j] = g.edges[i][j]; 
+   // Copy the edges using the overloaded assignment operator.
+   for (int i = 0; i < numNodes(); i++)
+      for (int j = 0; j < numNodes(); j++)
+	 edges[i][j] = g.edges[i][j];
 }
-   
+
 graph &graph::operator=(const graph &g)
 // Graph assignment operator.
 {
@@ -483,8 +483,8 @@ graph &graph::operator=(const graph &g)
    // new nodes.  This avoids the exception that is thrown by
    // node::setId which is called by the node copy constructor.  The
    // temporary node is overwritten later in this function.
-   
-   node tempNode;       
+
+   node tempNode;
    tempNode.setId(0);
 
    nodes.resize(g.numNodes(),tempNode);
@@ -602,7 +602,7 @@ NodeWeight graph::getTotalNodeWeight()
 // Return the total node weight.
 {
    NodeWeight weight = 0;
-   
+
    for (int i = 0; i < numNodes(); i++)
       weight = weight + nodes[i].getWeight();
 
@@ -613,7 +613,7 @@ EdgeWeight graph::getTotalEdgeWeight()
 // Return the total edge weight.
 {
    EdgeWeight weight = 0;
-   
+
    for (int i = 0; i < numNodes(); i++)
       for (int j = 0; j < numNodes(); j++)
          if (isEdge(i,j))
@@ -644,7 +644,7 @@ int graph::numEdges() const
 {
    return NumEdges;
 }
-   
+
 void graph::printNodes() const
 // Print all nodes.
 {
@@ -679,7 +679,7 @@ ostream &operator<<(ostream &ostr, const graph &g)
    return ostr;
 }
 
-node &graph::getNode(int i) 
+node &graph::getNode(int i)
 // Return a reference to the ith node.  Throws an exception if i is
 // too small or too large.
 {
@@ -699,7 +699,7 @@ const node &graph::getNode(int i) const
    return nodes[i];
 }
 
-edge &graph::getEdge(int i, int j) 
+edge &graph::getEdge(int i, int j)
 // Return a reference to the edge connecting nodes i and j.  If i is
 // too small or too large, or if the edge does not exist, throws an
 // exception.
@@ -772,7 +772,7 @@ bool graph::isMarked(int i) const
 
    return nodes[i].isMarked();
 }
-   
+
 bool graph::isMarked(int i, int j) const
 // Return true if edge (i,j) node is marked.  Otherwise return false.
 // Throws an exception if (i,j) is not an edge.
@@ -782,7 +782,7 @@ bool graph::isMarked(int i, int j) const
 
    return edges[i][j].isMarked();
 }
-   
+
 void graph::clearMark()
 // Set all nodes and edges as unmarked.
 {
@@ -844,7 +844,7 @@ bool graph::isVisited(int i) const
 
    return nodes[i].isVisited();
 }
-   
+
 bool graph::isVisited(int i, int j) const
 // Return true if edge (i,j) has been visited.  Otherwise return
 // false.  Throws an exception if (i,j) is not an edge.
@@ -854,7 +854,7 @@ bool graph::isVisited(int i, int j) const
 
    return edges[i][j].isVisited();
 }
-   
+
 void graph::clearVisit()
 // Set all nodes and edges as unvisited.
 {
