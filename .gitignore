@@ -1,0 +1,7 @@
+*.log
+nev-dec5/Debug/nev-dec5.exe
+*.opendb
+nev-dec5/nev-dec5/Debug/vc140.idb
+*.pdb
+*.idb
+nev-dec5/nev-dec5/Debug/p5.obj
