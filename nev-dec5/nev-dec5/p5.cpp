@@ -133,6 +133,8 @@ void maze::mapMazeToGraph(graph &g)
 				g.addNode(newNode);
 				n++; //increment n
 			}
+			else //set unusable squares to -1 instead of 0
+				setMap(r, c, -1);
 		}
 	}
 
@@ -152,7 +154,12 @@ void maze::mapMazeToGraph(graph &g)
 					{
 						int neighbor = getMap(r+i, c+j);
 
-						if (i == 0 && j == 0) //eliminate self loops
+						//don't check diagonals or self
+						if ((i == 0 && j == 0)||
+								(i<0&&j>0)||
+								(i>0&&j<0)||
+								(i==-1 &&j == -1)||
+								(i==1 && j == 1))
 						{
 							continue;
 						}
