@@ -39,10 +39,10 @@ int maze ::getMap(int i, int j) const
 // Return mapping of maze cell (i,j) in the graph.
 {
 	//debug:
-	cout<<"map rows: "<<map.rows()<<endl;
-	cout<<"r: "<<i<<endl;
-	cout<<"map cols: "<<map.cols()<<endl;
-	cout<<"c: "<<j<<endl;
+	// cout<<"map rows: "<<map.rows()<<endl;
+	// cout<<"r: "<<i<<endl;
+	// cout<<"map cols: "<<map.cols()<<endl;
+	// cout<<"c: "<<j<<endl;
 
 	if(map.rows() > i && map.cols() > j && i >= 0 && j >= 0)
 	{
@@ -204,7 +204,9 @@ int main()
       {
          maze m(fin);
 		 m.mapMazeToGraph(g);
-		 cout<<g<<endl;
+		 g.findPath();
+		 //cout<<g<<endl;
+		 system("pause");
       }
 
 

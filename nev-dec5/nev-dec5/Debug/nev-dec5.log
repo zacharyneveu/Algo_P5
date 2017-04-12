@@ -1,3 +1,4 @@
 ﻿  p5.cpp
-c:\users\zachary\googledrive\documents\algorithms\algo_p5\p5.cpp(115): warning C4101: 'x': unreferenced local variable
-c:\users\zachary\googledrive\documents\algorithms\algo_p5\p5.cpp(40): error C4716: 'maze::getMap': must return a value
+c:\users\zachary\googledrive\documents\algorithms\algo_p5\nev-dec5\nev-dec5\graph.h(927): warning C4018: '<': signed/unsigned mismatch
+  nev-dec5.vcxproj -> C:\Users\Zachary\GoogleDrive\Documents\Algorithms\Algo_P5\nev-dec5\Debug\nev-dec5.exe
+  nev-dec5.vcxproj -> C:\Users\Zachary\GoogleDrive\Documents\Algorithms\Algo_P5\nev-dec5\Debug\nev-dec5.pdb (Partial PDB)

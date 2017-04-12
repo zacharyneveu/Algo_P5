@@ -411,6 +411,10 @@ class graph
    void clearVisit();
    bool allNodesVisited();
 
+   bool findPath(int, int);
+   bool findPath(); //starter function for other findPath()
+   bool getNeighbor(node currNode, node &neighbor);
+
   private:
    matrix<edge> edges;
    vector<node> nodes;
@@ -893,4 +897,99 @@ bool graph::allNodesMarked()
    return true;
 }
 
+bool graph::findPath()
+//This function calls findPath with the top left, and bottom right corners of
+//the maze as arguments
+{
+	int target = numNodes()-1;
+	return findPath(0, target);
+}
 
+bool graph::findPath(int startNode, int targetNode)
+//This function finds a path through the maze using non-recursive DFS
+{
+	stack<int> dfs; //stack of vertices for dfs
+
+	//push initial node and mark as visited so stack not empty
+	dfs.push(startNode);
+	nodes[startNode].visit();
+
+	vector<string> path; //stores the path
+
+	node nextNode; //stores found neighbor
+	while(!dfs.empty())
+	{
+		if(dfs.top() == targetNode) //puzzle solved
+		{
+			cout<<"Path Found with "<<path.size()<<" Steps:"<<endl;
+
+			//tell user when to repeat steps in a direction, i.e.
+			//"go left 6 times" instead of just printing "go left" 6 times
+			int counter = 1;
+			path.push_back(""); //push back garbage to avoid errors
+			for (int i=0; i<path.size()-1; i++)
+			{
+				if (path[i] == path[i+1]) //if repeated step
+				{
+					counter++;
+					continue;
+				}
+				else if(counter == 1) //if not repeated step
+				{
+					cout<<"Go "<<path[i]<<endl;
+				}
+				else //if last in set of repeated steps
+				{
+					cout<<"Go "<<path[i]<<" "<<counter<<" times."<<endl;
+					counter = 1; //reset counter
+				}
+			}
+			return true;
+		}
+		else if(getNeighbor(getNode(dfs.top()), nextNode))
+		{
+			string dir = edges[dfs.top()][nextNode.getId()].getDirection();
+			path.push_back(dir);
+
+			//push a neighbor of the top to the stack
+			dfs.push(nextNode.getId());
+			nodes[dfs.top()].visit();
+		}
+		else
+		{
+			dfs.pop();
+			path.pop_back();
+		}
+
+	}
+	cout<<"Path Not Found!"<<endl;
+	return false;
+}
+
+bool graph::getNeighbor(node currNode, node &neighbor)
+//This function finds a valid neighbor to the square passed, and returns the
+//neighbor by reference
+{
+	int currId = currNode.getId();
+	edge currEdge;
+	for (int c = 0; c < numNodes(); c++)
+	{
+		currEdge = edges[currId][c];
+
+		//don't return edges to self
+		if(c == currId)
+		{
+			continue;
+		}
+
+		//check if edge is valid, and next node is unvisited
+		if(currEdge.isValid() && !getNode(c).isVisited())
+		{
+			//return node by reference
+			neighbor = getNode(c);
+			//true means a neighbor was found and returned
+			return true;
+		}
+	}
+	return false;
+}
