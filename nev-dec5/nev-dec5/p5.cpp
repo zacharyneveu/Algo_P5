@@ -37,6 +37,7 @@ void maze::setMap(int i, int j, int n)
 int maze ::getMap(int i, int j) const
 // Return mapping of maze cell (i,j) in the graph.
 {
+	return 0;
 }
 
 maze::maze(ifstream &fin)
@@ -116,15 +117,15 @@ int main()
    ifstream fin;
    
    // Read the maze from the file.
-   string fileName = "maze.txt";
+   string fileName = "maze1.txt";
 
    fin.open(fileName.c_str());
    if (!fin)
    {
       cerr << "Cannot open " << fileName << endl;
+	  system("pause");
       exit(1);
    }
-
    try
    {
 
@@ -138,10 +139,17 @@ int main()
    } 
    catch (indexRangeError &ex) 
    { 
-      cout << ex.what() << endl; exit(1);
+      cout << ex.what() << endl;
+	  system("pause");
+	  exit(1);
    }
    catch (rangeError &ex)
    {
-      cout << ex.what() << endl; exit(1);
+      cout << ex.what() << endl;
+	  system("pause");
+	  exit(1);
    }
+   printf("Exited successfully...\n");
+   system("pause");
+   return 0;
 }
