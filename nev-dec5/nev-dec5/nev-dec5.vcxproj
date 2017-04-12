@@ -19,20 +19,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\p5.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\d_except.h" />
-    <ClInclude Include="..\..\d_matrix.h" />
-    <ClInclude Include="..\..\graph.h" />
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="maze1.txt" />
     <Text Include="maze2.txt" />
     <Text Include="maze3.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="d_except.h" />
+    <ClInclude Include="d_matrix.h" />
+    <ClInclude Include="graph.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="p5.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7D29D007-2CF1-47AB-BF8F-660A1C445926}</ProjectGuid>
