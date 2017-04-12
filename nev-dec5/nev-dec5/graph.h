@@ -370,8 +370,8 @@ class graph
    void removeEdge(int i, int j);
 
    vector<edge> getEdges(node n);
-   bool recursiveDFS(const graph g);
-   bool recursiveDFS(graph g, node current, node goal);
+   vector<int> recursiveDFS(const graph g);
+   vector<int> recursiveDFS(graph &g, node current, node goal);
 
    int addNode(NodeWeight w = 0);
    int addNode(node n);
@@ -907,18 +907,23 @@ vector<edge> graph::getEdges(node n) {
 	return result;
 }
 
-bool graph::recursiveDFS(const graph g) {
+vector<int> graph::recursiveDFS(const graph g) {
 	//clear existing nodes
 	graph base = g;
 	base.clearVisit();
-
-	return recursiveDFS(base, g.getNode(0), nodes.back());
+	vector<int> finalPath = recursiveDFS(base, g.getNode(0), nodes.back());
+	finalPath.push_back(0);
+	return finalPath;
 }
-bool graph::recursiveDFS(graph g, node current, node goal) {
+vector<int> graph::recursiveDFS(graph &g, node current, node goal) {
+	vector<int> result;
 	if (current.getId() == goal.getId()) {
-		return true;
+		result.push_back(goal.getId());
+		return result;
 	}
+
 	vector<edge> edges = g.getEdges(current);
+
 	for (int i = 0; i < edges.size(); i++) {
 		//get the node
 		node testNode = g.getNode(edges[i].getDest());
@@ -930,15 +935,16 @@ bool graph::recursiveDFS(graph g, node current, node goal) {
 		g.visit(testNode.getId());
 
 		//recurse
-		if (recursiveDFS(g, testNode, goal)) {
+		result = recursiveDFS(g, testNode, goal);
+		if (result.size() != 0) {
 			//if found, print out node, and return
-			(printf("Path: %d\n", testNode.getId()));
-			return true;
+			result.push_back(testNode.getId());
+			return result;
 		}
 		//else continue through edges
 	}
 	//no suitable node found to continue
-	return false;
+	return result;
 }
 
 

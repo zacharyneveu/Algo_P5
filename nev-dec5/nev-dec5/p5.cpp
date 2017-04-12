@@ -14,12 +14,15 @@ class maze
 {
    public:
       maze(ifstream &fin);
-      void print(int,int,int,int);
+      void print(int,int,int,int) const;
       bool isLegal(int i, int j);
 
       void setMap(int i, int j, int n);
       int getMap(int i, int j) const;
       void mapMazeToGraph(graph &g);
+
+	  //Get the row and column for a specific node
+	  void getCoord(int node, int &r, int &c) const;
 
    private:
       int rows; // number of rows in the maze
@@ -38,11 +41,6 @@ void maze::setMap(int i, int j, int n)
 int maze ::getMap(int i, int j) const
 // Return mapping of maze cell (i,j) in the graph.
 {
-	//debug:
-	/*cout<<"map rows: "<<map.rows()<<endl;
-	cout<<"r: "<<i<<endl;
-	cout<<"map cols: "<<map.cols()<<endl;
-	cout<<"c: "<<j<<endl;*/
 
 	if(map.rows() > i && map.cols() > j && i >= 0 && j >= 0)
 	{
@@ -75,7 +73,7 @@ maze::maze(ifstream &fin)
    map.resize(rows,cols);
 }
 
-void maze::print(int goalI, int goalJ, int currI, int currJ)
+void maze::print(int goalI, int goalJ, int currI, int currJ) const
 // Print out a maze, with the goal and current cells marked on the
 // board.
 {
@@ -181,13 +179,40 @@ void maze::mapMazeToGraph(graph &g)
 	}
 }
 
+void maze::getCoord(int node, int &r, int &c) const {
+	for (int i = 0; i < rows; i++)
+		for (int j = 0; j < cols; j++)
+			if (map[i][j] == node) {
+				r = i;
+				c = j;
+				return;
+			}
+}
+
+
+int printPath(const maze &m, const graph &g, vector<int> result) {
+	int goalx;
+	int goaly;
+	m.getCoord(result.back(), goalx, goaly);
+	cout << "Initial Maze";
+	for (int i = result.size() - 1; i >= 1; i--) {
+		int currx;
+		int curry;
+		m.getCoord(result[i], currx, curry);
+		m.print(goalx, goaly, currx, curry);
+		if (i >= 2)
+			cout << "Moving " << g.getEdge(g.getNode(result[i]).getId(), 
+								g.getNode(result[i - 1]).getId()).getDirection();
+	}
+	return 1;
+}
 
 int main()
 {
    ifstream fin;
 
    // Read the maze from the file.
-   string fileName = "maze1.txt";
+   string fileName = "maze2.txt";
 
    fin.open(fileName.c_str());
    if (!fin)
@@ -204,8 +229,10 @@ int main()
       {
          maze m(fin);
 		 m.mapMazeToGraph(g);
-		 cout << g << endl;
-		 g.recursiveDFS(g);
+		 //cout << g << endl;
+		 vector<int> result = g.recursiveDFS(g);
+
+		 printPath(m, g, result);
       }
 
 
