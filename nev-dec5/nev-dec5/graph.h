@@ -160,7 +160,7 @@ class edge
 {
    public:
       edge();
-      edge(int, int, EdgeWeight = 0);
+      edge(int, int, EdgeWeight = 0, string = "");
       edge(const edge &);
       edge &operator=(const edge &);
 
@@ -169,6 +169,8 @@ class edge
 
       int getSource() const;
       int getDest() const;
+
+	  string getDirection() const {return direction;}
 
       void setValid();
       void setInvalid();
@@ -182,7 +184,7 @@ class edge
       void unVisit();
       bool isVisited() const;
 
-      void setEdge(int, int, EdgeWeight);
+      void setEdge(int, int, EdgeWeight, string);
 
    private:
       int source;
@@ -191,7 +193,7 @@ class edge
       bool valid;         // equals true if edge is valid, otherwise the
       bool visited;
       bool marked;
-      // edge is invalid
+	  string direction; //stores direction on the maze
 };
 
 edge::edge()
@@ -202,11 +204,11 @@ edge::edge()
    unVisit();
 }
 
-edge::edge(int i, int j, EdgeWeight w)
+edge::edge(int i, int j, EdgeWeight w, string dir)
 // Constructor creates an edge with weight w, and marks the edge as valid, unvisited
 // and unmarked.
 {
-   setEdge(i,j,w);
+   setEdge(i,j,w,dir);
    unMark();
    unVisit();
 }
@@ -214,7 +216,7 @@ edge::edge(int i, int j, EdgeWeight w)
 edge::edge(const edge &e)
 // Copy constructor.  Also copies visited and marked state.
 {
-   setEdge(e.source, e.dest, e.getWeight());
+   setEdge(e.source, e.dest, e.getWeight(), e.getDirection());
 
    if (e.isValid())
       setValid();
@@ -235,7 +237,7 @@ edge::edge(const edge &e)
 edge &edge::operator=(const edge &e)
 // Overloaded assignment operator
 {
-   setEdge(e.source, e.dest, e.getWeight());
+   setEdge(e.source, e.dest, e.getWeight(), e.getDirection());
 
    if (e.isValid())
       setValid();
@@ -255,13 +257,14 @@ edge &edge::operator=(const edge &e)
    return *this;
 }
 
-void edge::setEdge(int i, int j, EdgeWeight w = 0)
+void edge::setEdge(int i, int j, EdgeWeight w = 0, string direction = "")
 // Initialize edge with source, destination and weight and mark edge
 // as valid.  Do not change visited or marked state.
 {
    source = i;
    dest = j;
    weight = w;
+   this->direction = direction;
    setValid();
 }
 
@@ -282,6 +285,7 @@ EdgeWeight edge::getSource() const
 {
    return source;
 }
+string direction; //stores direction on the maze
 
 EdgeWeight edge::getDest() const
 // Return destination node.
@@ -348,7 +352,7 @@ ostream &operator<<(ostream &ostr, const edge &e)
 {
    cout << "edge (" << e.getSource() << "," << e.getDest() << "): ";
    cout << " weight: " << e.getWeight() << " visited: " << e.isVisited()
-	<< " marked " << e.isMarked() << endl;
+	<< " marked: " << e.isMarked() << " direction: " << e.getDirection() << endl;
 
    return ostr;
 }
@@ -362,7 +366,7 @@ class graph
    graph(const graph &);
    graph &operator=(const graph &);
 
-   void addEdge(int i, int j, NodeWeight w = 0);
+   void addEdge(int i, int j, NodeWeight w = 0, string dir = "");
    void removeEdge(int i, int j);
 
    int addNode(NodeWeight w = 0);
@@ -525,7 +529,7 @@ int graph::addNode(node n)
    return numNodes()-1;
 }
 
-void graph::addEdge(int i, int j, NodeWeight w)
+void graph::addEdge(int i, int j, NodeWeight w, string dir)
 // Add an edge of weight w from node i to node j.  Throws an exception
 // if i or j is too small or large.  Does not allow duplicate edges
 // to be added.
@@ -534,7 +538,7 @@ void graph::addEdge(int i, int j, NodeWeight w)
       throw rangeError("Bad value in graph::addEdge");
 
    if (!isEdge(i,j))
-      edges[i][j] = edge(i,j,w);
+      edges[i][j] = edge(i,j,w,dir);
    NumEdges++;
 }
 
@@ -888,3 +892,5 @@ bool graph::allNodesMarked()
 
    return true;
 }
+
+

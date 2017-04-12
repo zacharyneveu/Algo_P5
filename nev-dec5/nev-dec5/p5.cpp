@@ -144,32 +144,36 @@ void maze::mapMazeToGraph(graph &g)
 		for (int c=0; c<cols; c++)
 		{
 			int self = getMap(r, c);
+			int neighbors[4]; //array of neighbor maps
+			string dir;
+
+			neighbors[0] = getMap(r, c+1); //right
+			neighbors[1] = getMap(r+1, c); //down
+			neighbors[2] = getMap(r, c-1); //left
+			neighbors[3] = getMap(r-1, c); //up
 
 			if(self >= 0)
 			{
-				//i and j iterate over neighbors
-				for (int i=-1; i<=1; i++)
+				for (int n=0; n<=4; n++)
 				{
-					for (int j=-1; j<=1; j++)
+					if (neighbors[n] >= 0)
 					{
-						int neighbor = getMap(r+i, c+j);
-
-						//don't check diagonals or self
-						if ((i == 0 && j == 0)||
-								(i<0&&j>0)||
-								(i>0&&j<0)||
-								(i==-1 &&j == -1)||
-								(i==1 && j == 1))
+						switch(n)
 						{
-							continue;
+							case 0:
+								dir = "right";
+								break;
+							case 1:
+								dir = "down";
+								break;
+							case 2:
+								dir = "left";
+								break;
+							case 3:
+								dir = "up";
+								break;
 						}
-
-						else if(neighbor >= 0)
-						{
-							//add edges in both directions
-							g.addEdge(neighbor, self);
-							g.addEdge(self, neighbor);
-						}
+						g.addEdge(self, neighbors[n], 0, dir);
 					}
 				}
 			}
