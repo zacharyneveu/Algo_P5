@@ -30,4 +30,20 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="maze1.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="maze2.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="maze3.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
