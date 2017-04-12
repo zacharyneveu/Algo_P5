@@ -369,6 +369,10 @@ class graph
    void addEdge(int i, int j, NodeWeight w = 0, string dir = "");
    void removeEdge(int i, int j);
 
+   vector<edge> getEdges(node n);
+   bool recursiveDFS(const graph g);
+   bool recursiveDFS(graph g, node current, node goal);
+
    int addNode(NodeWeight w = 0);
    int addNode(node n);
 
@@ -891,6 +895,50 @@ bool graph::allNodesMarked()
 	 return false;
 
    return true;
+}
+
+vector<edge> graph::getEdges(node n) {
+	vector<edge> result;
+	for (int i = 0; i < nodes.size(); i++) {
+		if (isEdge(n.getId(), i)) {
+			result.push_back(edges[n.getId()][i]);
+		}
+	}
+	return result;
+}
+
+bool graph::recursiveDFS(const graph g) {
+	//clear existing nodes
+	graph base = g;
+	base.clearVisit();
+
+	return recursiveDFS(base, g.getNode(0), nodes.back());
+}
+bool graph::recursiveDFS(graph g, node current, node goal) {
+	if (current.getId() == goal.getId()) {
+		return true;
+	}
+	vector<edge> edges = g.getEdges(current);
+	for (int i = 0; i < edges.size(); i++) {
+		//get the node
+		node testNode = g.getNode(edges[i].getDest());
+
+		//if the note is visited try the next
+		if (testNode.isVisited()) { continue; }
+
+		//Mark node visited
+		g.visit(testNode.getId());
+
+		//recurse
+		if (recursiveDFS(g, testNode, goal)) {
+			//if found, print out node, and return
+			(printf("Path: %d\n", testNode.getId()));
+			return true;
+		}
+		//else continue through edges
+	}
+	//no suitable node found to continue
+	return false;
 }
 
 
