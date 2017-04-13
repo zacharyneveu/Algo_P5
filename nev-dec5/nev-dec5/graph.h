@@ -1085,7 +1085,9 @@ vector<int> graph::recursiveDFS(graph &g, node current, node goal)
         if (result.size() != 0)
         {
             //if found, print out node, and return
-            result.push_back(testNode.getId());
+			//prevent the final node from being doubleadded
+			if (testNode.getId() != goal.getId())
+				result.push_back(testNode.getId());
             return result;
         }
 

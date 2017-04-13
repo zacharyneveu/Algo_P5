@@ -225,9 +225,9 @@ int printPath(const maze &m, const graph &g, vector<int> result, bool graph)
     int goalx;
     int goaly;
     m.getCoord(result.back(), goalx, goaly);
-    cout << "Initial Maze" << endl;
+    cout << "\nInitial Maze";
 
-    for (int i = result.size() - 1; i >= 1; i--)
+    for (int i = result.size() - 1; i >= 0; i--)
     {
         int currx;
         int curry;
@@ -238,9 +238,9 @@ int printPath(const maze &m, const graph &g, vector<int> result, bool graph)
             m.print(goalx, goaly, currx, curry);
         }
 
-        if (i >= 2)
+        if (i >= 1)
             cout << "Moving " << g.getEdge(g.getNode(result[i]).getId(),
-                                           g.getNode(result[i - 1]).getId()).getDirection() << endl;
+                                           g.getNode(result[i - 1]).getId()).getDirection();
     }
 
     return 1;
@@ -251,7 +251,7 @@ int main()
     ifstream fin;
 
     // Read the maze from the file.
-    string fileName = "maze2.txt";
+    string fileName = "maze1.txt";
 
     fin.open(fileName.c_str());
 
