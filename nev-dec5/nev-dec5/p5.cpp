@@ -219,8 +219,11 @@ void maze::getCoord(int node, int &r, int &c) const
             }
 }
 
+//Takes a vector of result in reverse order (0 is the final node number in path)
+//and prints out the directions
 int printPath(const maze &m, const graph &g, vector<int> result, bool graph)
 {
+	//get the goal x and y on the maze
     int goalx;
     int goaly;
     m.getCoord(result[0], goalx, goaly);
@@ -229,17 +232,21 @@ int printPath(const maze &m, const graph &g, vector<int> result, bool graph)
 	if(!graph) //make new line if not using graphics
 		cout<<endl;
 
+	//for every node in the result, create an inage and print out maze and direction
     for (int i = result.size() - 1; i >= 0; i--)
     {
+		//get current position x and y
         int currx;
         int curry;
         m.getCoord(result[i], currx, curry);
 
+		//print maze if desired
         if (graph)
         {
             m.print(goalx, goaly, currx, curry);
         }
 
+		//print direction of moveent
         if (i >= 1)
             cout << "Moving " << g.getEdge(g.getNode(result[i]).getId(),
                                            g.getNode(result[i - 1]).getId()).getDirection();
@@ -247,7 +254,7 @@ int printPath(const maze &m, const graph &g, vector<int> result, bool graph)
 			cout<<endl;
     }
 
-    return 1;
+    return 0;
 }
 
 int main()
@@ -259,6 +266,7 @@ int main()
 
     fin.open(fileName.c_str());
 
+	//error hanidng
     if (!fin)
     {
         cerr << "Cannot open " << fileName << endl;
@@ -273,10 +281,11 @@ int main()
 
         while (fin && fin.peek() != 'Z')
         {
+			//read in maze
             maze m(fin);
             m.mapMazeToGraph(g);
-            //cout << g << endl;
 
+			//user options
             cout << "Enter r for recursive, n for non-recursive solving: ";
             char mode;
             cin >> mode;
@@ -305,6 +314,7 @@ int main()
 
 
     }
+	//exception handing
     catch (indexRangeError &ex)
     {
         cout << ex.what() << endl;
@@ -318,7 +328,7 @@ int main()
         exit(1);
     }
 
-    printf("Exited successfully...\n");
+    //printf("Exited successfully...\n");
     system("pause");
     return 0;
 }
