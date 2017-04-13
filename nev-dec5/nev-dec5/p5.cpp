@@ -219,13 +219,15 @@ void maze::getCoord(int node, int &r, int &c) const
             }
 }
 
-
 int printPath(const maze &m, const graph &g, vector<int> result, bool graph)
 {
     int goalx;
     int goaly;
     m.getCoord(result[0], goalx, goaly);
     cout << "\nInitial Maze";
+
+	if(!graph) //make new line if not using graphics
+		cout<<endl;
 
     for (int i = result.size() - 1; i >= 0; i--)
     {
@@ -241,6 +243,8 @@ int printPath(const maze &m, const graph &g, vector<int> result, bool graph)
         if (i >= 1)
             cout << "Moving " << g.getEdge(g.getNode(result[i]).getId(),
                                            g.getNode(result[i - 1]).getId()).getDirection();
+		if(!graph)
+			cout<<endl;
     }
 
     return 1;

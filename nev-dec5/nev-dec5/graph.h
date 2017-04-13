@@ -1111,49 +1111,32 @@ vector<int> graph::findPath(int startNode, int targetNode)
 {
     stack<int> dfs; //stack of vertices for dfs
 
+    vector<int> path; //stores the path
+
     //push initial node and mark as visited so stack not empty
     dfs.push(startNode);
     nodes[startNode].visit();
 
-    vector<int> path; //stores the path
+	//initialize path with starting node
+	path.push_back(startNode);
+
 
     node nextNode; //stores found neighbor
 
-    while (!dfs.empty())
+    while (!dfs.empty()) //keep looping until solution found or impossible
     {
         if (dfs.top() == targetNode) //puzzle solved
         {
-            cout << "Path Found with " << path.size() << " Steps:" << endl;
+            //cout << "Path Found with " << path.size() << " Steps:" << endl;
 
-            /*
-             *             //tell user when to repeat steps in a direction, i.e.
-             *             //"go left 6 times" instead of just printing "go left" 6 times
-             *             int counter = 1;
-             *             path.push_back(""); //push back garbage to avoid errors
-             *
-             *             for (int i = 0; i < path.size() - 1; i++)
-             *             {
-             *                 if (path[i] == path[i + 1]) //if repeated step
-             *                 {
-             *                     counter++;
-             *                     continue;
-             *                 }
-             *                 else if (counter == 1) //if not repeated step
-             *                 {
-             *                     cout << "Go " << path[i] << endl;
-             *                 }
-             *                 else //if last in set of repeated steps
-             *                 {
-             *                     cout << "Go " << path[i] << " " << counter << " times." << endl;
-             *                     counter = 1; //reset counter
-             *                 }
-             *             }
-             *
-             */
+			//path reversed to use print function created for recursive method.
+			//TODO: find a neater solution, even though this works
             vector<int> reversePath;
             reverseVector(path, reversePath);
             return reversePath;
-        }
+        } //endif
+
+		//neighbor found, but not solved yet
         else if (getNeighbor(getNode(dfs.top()), nextNode))
         {
             //string dir = edges[dfs.top()][nextNode.getId()].getDirection();
@@ -1161,35 +1144,43 @@ vector<int> graph::findPath(int startNode, int targetNode)
 
             //push a neighbor of the top to the stack
             dfs.push(nextNode.getId());
+			//mark as visited
             nodes[dfs.top()].visit();
-        }
-        else
+        } //end else if
+
+        else //no neighbors found
         {
             dfs.pop();
             path.pop_back();
-        }
+        }//end else
 
-    }
+    } //end while loop
 
     cout << "Path Not Found!" << endl;
+
+	//return incomplete path if fails
     vector<int> reversePath;
     reverseVector(path, reversePath);
     return reversePath;
-}
+} //end function
 
 void reverseVector(vector<int> &forwards, vector<int> &reverse)
+//simple function to reverse a vector.  This is needed because recursive and
+//non-recursive algorithms return path in opposite order and one needed to be
+//reversed to use the print function
 {
     if (forwards.size() == 0)
     {
         return;
     }
-    else
+    else //original not empty yet
     {
         reverse.push_back(forwards.back());
         forwards.pop_back();
+		//recursively call this function
         reverseVector(forwards, reverse);
     }
-}
+}//end function
 
 bool graph::getNeighbor(node currNode, node &neighbor)
 //This function finds a valid neighbor to the square passed, and returns the
