@@ -1123,34 +1123,34 @@ vector<int> graph::findPath(int startNode, int targetNode)
         {
             cout << "Path Found with " << path.size() << " Steps:" << endl;
 
-/*
- *             //tell user when to repeat steps in a direction, i.e.
- *             //"go left 6 times" instead of just printing "go left" 6 times
- *             int counter = 1;
- *             path.push_back(""); //push back garbage to avoid errors
- *
- *             for (int i = 0; i < path.size() - 1; i++)
- *             {
- *                 if (path[i] == path[i + 1]) //if repeated step
- *                 {
- *                     counter++;
- *                     continue;
- *                 }
- *                 else if (counter == 1) //if not repeated step
- *                 {
- *                     cout << "Go " << path[i] << endl;
- *                 }
- *                 else //if last in set of repeated steps
- *                 {
- *                     cout << "Go " << path[i] << " " << counter << " times." << endl;
- *                     counter = 1; //reset counter
- *                 }
- *             }
- *
- */
-			vector<int> reversePath;
-			reverseVector(path, reversePath);
-			return reversePath;
+            /*
+             *             //tell user when to repeat steps in a direction, i.e.
+             *             //"go left 6 times" instead of just printing "go left" 6 times
+             *             int counter = 1;
+             *             path.push_back(""); //push back garbage to avoid errors
+             *
+             *             for (int i = 0; i < path.size() - 1; i++)
+             *             {
+             *                 if (path[i] == path[i + 1]) //if repeated step
+             *                 {
+             *                     counter++;
+             *                     continue;
+             *                 }
+             *                 else if (counter == 1) //if not repeated step
+             *                 {
+             *                     cout << "Go " << path[i] << endl;
+             *                 }
+             *                 else //if last in set of repeated steps
+             *                 {
+             *                     cout << "Go " << path[i] << " " << counter << " times." << endl;
+             *                     counter = 1; //reset counter
+             *                 }
+             *             }
+             *
+             */
+            vector<int> reversePath;
+            reverseVector(path, reversePath);
+            return reversePath;
         }
         else if (getNeighbor(getNode(dfs.top()), nextNode))
         {
@@ -1170,23 +1170,23 @@ vector<int> graph::findPath(int startNode, int targetNode)
     }
 
     cout << "Path Not Found!" << endl;
-	vector<int> reversePath;
-	reverseVector(path, reversePath);
-	return reversePath;
+    vector<int> reversePath;
+    reverseVector(path, reversePath);
+    return reversePath;
 }
 
 void reverseVector(vector<int> &forwards, vector<int> &reverse)
 {
-	if(forwards.size() == 0)
-	{
-		return;
-	}
-	else
-	{
-		reverse.push_back(forwards.back());
-		forwards.pop_back();
-		reverseVector(forwards, reverse);
-	}
+    if (forwards.size() == 0)
+    {
+        return;
+    }
+    else
+    {
+        reverse.push_back(forwards.back());
+        forwards.pop_back();
+        reverseVector(forwards, reverse);
+    }
 }
 
 bool graph::getNeighbor(node currNode, node &neighbor)

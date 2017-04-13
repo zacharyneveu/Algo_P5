@@ -225,21 +225,22 @@ int printPath(const maze &m, const graph &g, vector<int> result, bool graph)
     int goalx;
     int goaly;
     m.getCoord(result.back(), goalx, goaly);
-    cout << "Initial Maze"<<endl;
+    cout << "Initial Maze" << endl;
 
     for (int i = result.size() - 1; i >= 1; i--)
     {
         int currx;
         int curry;
         m.getCoord(result[i], currx, curry);
-		if(graph)
-		{
-        	m.print(goalx, goaly, currx, curry);
-		}
+
+        if (graph)
+        {
+            m.print(goalx, goaly, currx, curry);
+        }
 
         if (i >= 2)
             cout << "Moving " << g.getEdge(g.getNode(result[i]).getId(),
-                       g.getNode(result[i - 1]).getId()).getDirection()<<endl;
+                                           g.getNode(result[i - 1]).getId()).getDirection() << endl;
     }
 
     return 1;
@@ -272,26 +273,28 @@ int main()
             m.mapMazeToGraph(g);
             //cout << g << endl;
 
-			cout<<"Enter r for recursive, n for non-recursive solving: ";
-			char mode;
-			cin>>mode;
-			cout<<"For graphical output (verbose), enter g, else enter any letter: ";
-			char x;
-			cin>>x;
-			bool graph = x == 'g';
+            cout << "Enter r for recursive, n for non-recursive solving: ";
+            char mode;
+            cin >> mode;
+            cout << "For graphical output (verbose), enter g, else enter any letter: ";
+            char x;
+            cin >> x;
+            bool graph = x == 'g';
 
-			if(mode == 'r')
-			{
-				vector<int> result = g.recursiveDFS(g);
-				printPath(m, g, result, graph);
-			}
-			else if(mode == 'n')
-			{
-				vector<int> result = g.findPath();
-				printPath(m, g, result, graph);
-			}
-			else
-				cout<<"Sorry didn't recognize that letter..."<<endl;
+            if (mode == 'r')
+            {
+                vector<int> result = g.recursiveDFS(g);
+                printPath(m, g, result, graph);
+            }
+            else if (mode == 'n')
+            {
+                vector<int> result = g.findPath();
+                printPath(m, g, result, graph);
+            }
+            else
+            {
+                cout << "Sorry didn't recognize that letter..." << endl;
+            }
 
 
         }
