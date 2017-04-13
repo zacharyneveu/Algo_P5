@@ -224,7 +224,7 @@ int printPath(const maze &m, const graph &g, vector<int> result, bool graph)
 {
     int goalx;
     int goaly;
-    m.getCoord(result.back(), goalx, goaly);
+    m.getCoord(result[0], goalx, goaly);
     cout << "\nInitial Maze";
 
     for (int i = result.size() - 1; i >= 0; i--)
