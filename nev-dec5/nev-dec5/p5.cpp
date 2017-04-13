@@ -1,4 +1,6 @@
-// Project 5
+// Project 5 Algorithms NEU
+// This file contains definitions for the maze class, as well as a main function
+// for the project
 
 #include <iostream>
 #include <limits.h>
@@ -220,14 +222,17 @@ void maze::getCoord(int node, int &r, int &c) const
 }
 
 int printPath(const maze &m, const graph &g, vector<int> result, bool graph)
+//This function prints out the path passed through the result argument.
 {
     int goalx;
     int goaly;
     m.getCoord(result[0], goalx, goaly);
     cout << "\nInitial Maze";
 
-	if(!graph) //make new line if not using graphics
-		cout<<endl;
+    if (!graph) //make new line if not using graphics
+    {
+        cout << endl;
+    }
 
     for (int i = result.size() - 1; i >= 0; i--)
     {
@@ -243,8 +248,11 @@ int printPath(const maze &m, const graph &g, vector<int> result, bool graph)
         if (i >= 1)
             cout << "Moving " << g.getEdge(g.getNode(result[i]).getId(),
                                            g.getNode(result[i - 1]).getId()).getDirection();
-		if(!graph)
-			cout<<endl;
+
+        if (!graph)
+        {
+            cout << endl;
+        }
     }
 
     return 1;
@@ -301,10 +309,10 @@ int main()
             }
 
 
-        }
+        } //end while loop
 
 
-    }
+    } //end try block
     catch (indexRangeError &ex)
     {
         cout << ex.what() << endl;

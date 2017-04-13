@@ -1,3 +1,6 @@
+//Project 5 Algorithms NEU
+//This file contains definitions for the node, edge, and graph classes as well
+//as functions to find a path through the graph
 #include <iostream>
 #include <fstream>
 #include "d_matrix.h"
@@ -1085,9 +1088,12 @@ vector<int> graph::recursiveDFS(graph &g, node current, node goal)
         if (result.size() != 0)
         {
             //if found, print out node, and return
-			//prevent the final node from being doubleadded
-			if (testNode.getId() != goal.getId())
-				result.push_back(testNode.getId());
+            //prevent the final node from being doubleadded
+            if (testNode.getId() != goal.getId())
+            {
+                result.push_back(testNode.getId());
+            }
+
             return result;
         }
 
@@ -1117,8 +1123,8 @@ vector<int> graph::findPath(int startNode, int targetNode)
     dfs.push(startNode);
     nodes[startNode].visit();
 
-	//initialize path with starting node
-	path.push_back(startNode);
+    //initialize path with starting node
+    path.push_back(startNode);
 
 
     node nextNode; //stores found neighbor
@@ -1129,14 +1135,14 @@ vector<int> graph::findPath(int startNode, int targetNode)
         {
             //cout << "Path Found with " << path.size() << " Steps:" << endl;
 
-			//path reversed to use print function created for recursive method.
-			//TODO: find a neater solution, even though this works
+            //path reversed to use print function created for recursive method.
+            //TODO: find a neater solution, even though this works
             vector<int> reversePath;
             reverseVector(path, reversePath);
             return reversePath;
         } //endif
 
-		//neighbor found, but not solved yet
+        //neighbor found, but not solved yet
         else if (getNeighbor(getNode(dfs.top()), nextNode))
         {
             //string dir = edges[dfs.top()][nextNode.getId()].getDirection();
@@ -1144,7 +1150,7 @@ vector<int> graph::findPath(int startNode, int targetNode)
 
             //push a neighbor of the top to the stack
             dfs.push(nextNode.getId());
-			//mark as visited
+            //mark as visited
             nodes[dfs.top()].visit();
         } //end else if
 
@@ -1158,7 +1164,7 @@ vector<int> graph::findPath(int startNode, int targetNode)
 
     cout << "Path Not Found!" << endl;
 
-	//return incomplete path if fails
+    //return incomplete path if fails
     vector<int> reversePath;
     reverseVector(path, reversePath);
     return reversePath;
@@ -1177,7 +1183,7 @@ void reverseVector(vector<int> &forwards, vector<int> &reverse)
     {
         reverse.push_back(forwards.back());
         forwards.pop_back();
-		//recursively call this function
+        //recursively call this function
         reverseVector(forwards, reverse);
     }
 }//end function
