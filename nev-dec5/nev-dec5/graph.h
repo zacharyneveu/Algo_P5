@@ -1047,27 +1047,41 @@ vector<edge> graph::getEdges(node n)
     return result;
 }
 
+//Searches a graph for a DFS using recursion
+//returns a reversed vector of integers indicating the node values
 vector<int> graph::recursiveDFS(const graph g)
 {
     //clear existing nodes
     graph base = g;
     base.clearVisit();
+
+	//call recursive DFS inplementation
     vector<int> finalPath = recursiveDFS(base, g.getNode(0), nodes.back());
+
+	//push the start into the vector
     finalPath.push_back(0);
+
+	//return the final path.
     return finalPath;
 }
+
+//Worker function for the recursive DFS using recursion
 vector<int> graph::recursiveDFS(graph &g, node current, node goal)
 {
+	//result vector.
     vector<int> result;
 
+	//if we found the end, start building result list
     if (current.getId() == goal.getId())
     {
         result.push_back(goal.getId());
         return result;
     }
 
+	//get the list of list of edges for the current node.
     vector<edge> edges = g.getEdges(current);
 
+	//iterate through the list of edges 
     for (int i = 0; i < edges.size(); i++)
     {
         //get the node
@@ -1085,6 +1099,7 @@ vector<int> graph::recursiveDFS(graph &g, node current, node goal)
         //recurse
         result = recursiveDFS(g, testNode, goal);
 
+		//if we are done searching, the result size will be > 0 
         if (result.size() != 0)
         {
             //if found, print out node, and return
@@ -1092,7 +1107,7 @@ vector<int> graph::recursiveDFS(graph &g, node current, node goal)
             if (testNode.getId() != goal.getId())
             {
                 result.push_back(testNode.getId());
-            }
+			//add current node to result and return the vector so far.
 
             return result;
         }
