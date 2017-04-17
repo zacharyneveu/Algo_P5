@@ -286,28 +286,35 @@ int main()
             m.mapMazeToGraph(g);
 
 			//user options
-            cout << "Enter r for recursive, n for non-recursive solving: ";
+            cout << "Enter r for recursive, n for non-recursive solving,\
+d for dijkstra's shortest path or b for bfs shorest path: ";
             char mode;
             cin >> mode;
             cout << "For graphical output (verbose), enter g, else enter any letter: ";
             char x;
             cin >> x;
             bool graph = x == 'g';
+			vector<int> result;
 
             if (mode == 'r')
             {
-                vector<int> result = g.recursiveDFS(g);
-                printPath(m, g, result, graph);
+                result = g.recursiveDFS(g);
             }
             else if (mode == 'n')
             {
-                vector<int> result = g.findPath();
-                printPath(m, g, result, graph);
+                result = g.findPath();
             }
+			else if (mode == 'd')
+			{
+				result = g.SPDij();
+
+			}
             else
             {
                 cout << "Sorry didn't recognize that letter..." << endl;
             }
+
+			printPath(m, g, result, graph);
 
 
         }

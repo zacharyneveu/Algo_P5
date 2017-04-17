@@ -1,0 +1,1358 @@
+#include <iostream>
+#include <fstream>
+#include "d_matrix.h"
+#include "d_except.h"
+#include <list>
+#include <stack>
+#include <queue>
+#include <cassert>
+
+using namespace std;
+
+typedef int WeightType;
+typedef int NodeType;
+
+int const MaxNumNodex = 9999;
+
+typedef int NodeWeight;
+typedef int EdgeWeight;
+
+void reverseVector(vector<int> &forwards, vector<int> &reverse);
+
+class node
+{
+public:
+    node();
+    node(const node &);
+    node &operator=(const node &);
+
+    void setId(int i);
+    int getId() const;
+
+    void setWeight(NodeWeight);
+    NodeWeight getWeight() const;
+
+    void setNode(int, NodeWeight, bool, bool);
+
+    void mark();
+    void unMark();
+    bool isMarked() const;
+
+    void visit();
+    void unVisit();
+    bool isVisited() const;
+
+private:
+    int id;
+    NodeWeight weight;
+    bool marked;
+    bool visited;
+};
+
+node::node()
+// Constructor, creates a new, uninitialized node. Id is initialized
+// elsewhere (by the graph constructor).
+{
+    unMark();
+    unVisit();
+    setWeight(0);
+}
+
+node::node(const node &n)
+// Copy constructor
+{
+    setNode(n.getId(), n.getWeight(), n.isMarked(), n.isVisited());
+}
+
+node &node::operator=(const node &n)
+// Overloaded assignment operator.
+{
+    setNode(n.getId(), n.getWeight(), n.isMarked(), n.isVisited());
+    return *this;
+}
+
+NodeWeight node::getWeight() const
+// Return node's weight
+{
+    return weight;
+}
+
+void node::setWeight(NodeWeight w)
+// Set node's weight to w.
+{
+    weight = w;
+}
+
+void node::setId(int i)
+// Set node's id to i.  Throws an exception if i < 0.
+{
+    if (i < 0)
+    {
+        throw rangeError("Bad value in node::setId");
+    }
+
+    id = i;
+}
+
+int node::getId() const
+// Return node's id
+{
+    return id;
+}
+
+void node::setNode(int id, NodeWeight w = 0, bool m = false, bool v = false)
+// Initialize a node;
+{
+    setId(id);
+    setWeight(w);
+
+    if (m)
+    {
+        mark();
+    }
+    else
+    {
+        unMark();
+    }
+
+    if (v)
+    {
+        visit();
+    }
+    else
+    {
+        unVisit();
+    }
+}
+
+void node::mark()
+// Mark node.
+{
+    marked = true;
+}
+
+void node::unMark()
+// Un-mark node.
+{
+    marked = false;
+}
+
+bool node::isMarked() const
+// Return true if node is marked, and false otherwise.
+{
+    return marked;
+}
+
+void node::visit()
+// Set visited to true;
+{
+    visited = true;
+}
+
+void node::unVisit()
+// Set visited to false;
+{
+    visited = false;
+}
+
+bool node::isVisited() const
+// Return true if node is visited, and false otherwise.
+{
+    return visited;
+}
+
+
+ostream &operator<<(ostream &ostr, const node &n)
+{
+    ostr << "node: " << n.getId() << " weight: " << n.getWeight()
+         << " visited: " << n.isVisited() << " marked " << n.isMarked() << endl;
+
+    return ostr;
+}
+
+class edge
+{
+public:
+    edge();
+    edge(int, int, EdgeWeight = 0, string = "");
+    edge(const edge &);
+    edge &operator=(const edge &);
+
+    void setWeight(EdgeWeight);
+    EdgeWeight getWeight() const;
+
+    int getSource() const;
+    int getDest() const;
+
+    string getDirection() const
+    {
+        return direction;
+    }
+
+    void setValid();
+    void setInvalid();
+    bool isValid() const;
+
+    void mark();
+    void unMark();
+    bool isMarked() const;
+
+    void visit();
+    void unVisit();
+    bool isVisited() const;
+
+    void setEdge(int, int, EdgeWeight, string);
+
+private:
+    int source;
+    int dest;
+    EdgeWeight weight;
+    bool valid;         // equals true if edge is valid, otherwise the
+    bool visited;
+    bool marked;
+    string direction; //stores direction on the maze
+};
+
+edge::edge()
+// Constructor, sets edge to invalid, unmarked and unvisited.
+{
+    setInvalid();
+    unMark();
+    unVisit();
+}
+
+edge::edge(int i, int j, EdgeWeight w, string dir)
+// Constructor creates an edge with weight w, and marks the edge as valid, unvisited
+// and unmarked.
+{
+    setEdge(i, j, w, dir);
+    unMark();
+    unVisit();
+}
+
+edge::edge(const edge &e)
+// Copy constructor.  Also copies visited and marked state.
+{
+    setEdge(e.source, e.dest, e.getWeight(), e.getDirection());
+
+    if (e.isValid())
+    {
+        setValid();
+    }
+    else
+    {
+        setInvalid();
+    }
+
+    if (e.isVisited())
+    {
+        visit();
+    }
+    else
+    {
+        unVisit();
+    }
+
+    if (e.isMarked())
+    {
+        mark();
+    }
+    else
+    {
+        unMark();
+    }
+}
+
+edge &edge::operator=(const edge &e)
+// Overloaded assignment operator
+{
+    setEdge(e.source, e.dest, e.getWeight(), e.getDirection());
+
+    if (e.isValid())
+    {
+        setValid();
+    }
+    else
+    {
+        setInvalid();
+    }
+
+    if (e.isVisited())
+    {
+        visit();
+    }
+    else
+    {
+        unVisit();
+    }
+
+    if (e.isMarked())
+    {
+        mark();
+    }
+    else
+    {
+        unMark();
+    }
+
+    return *this;
+}
+
+void edge::setEdge(int i, int j, EdgeWeight w = 0, string direction = "")
+// Initialize edge with source, destination and weight and mark edge
+// as valid.  Do not change visited or marked state.
+{
+    source = i;
+    dest = j;
+    weight = w;
+    this->direction = direction;
+    setValid();
+}
+
+void edge::setWeight(EdgeWeight w)
+// Set edge weight to w.
+{
+    weight = w;
+}
+
+EdgeWeight edge::getWeight() const
+// Return edge weight.
+{
+    return weight;
+}
+
+EdgeWeight edge::getSource() const
+// Return source node;
+{
+    return source;
+}
+string direction; //stores direction on the maze
+
+EdgeWeight edge::getDest() const
+// Return destination node.
+{
+    return dest;
+}
+
+void edge::setValid()
+// Set the edge as valid.
+{
+    valid = true;
+}
+
+void edge::setInvalid()
+// Set the edge as invalid.
+{
+    valid = false;
+}
+
+bool edge::isValid() const
+// Return true if edge is valid.  Otherwise return false;
+{
+    return valid;
+}
+
+void edge::mark()
+// Mark edge
+{
+    marked = true;
+}
+
+void edge::unMark()
+// Un-mark edge
+{
+    marked = false;
+}
+
+bool edge::isMarked() const
+// Return true if edge is marked, and false otherwise.
+{
+    return marked;
+}
+
+void edge::visit()
+// Set visited to true;
+{
+    visited = true;
+}
+
+void edge::unVisit()
+// Set visited to false;
+{
+    visited = false;
+}
+
+bool edge::isVisited() const
+// Return true if edge is visited, and false otherwise.
+{
+    return visited;
+}
+
+ostream &operator<<(ostream &ostr, const edge &e)
+// Print all edge information for a valid edge;
+{
+    cout << "edge (" << e.getSource() << "," << e.getDest() << "): ";
+    cout << " weight: " << e.getWeight() << " visited: " << e.isVisited()
+         << " marked: " << e.isMarked() << " direction: " << e.getDirection() << endl;
+
+    return ostr;
+}
+
+class graph
+{
+public:
+    graph();
+    graph(int n);
+    graph(ifstream &fin);
+    graph(const graph &);
+    graph &operator=(const graph &);
+
+    void addEdge(int i, int j, NodeWeight w = 0, string dir = "");
+    void removeEdge(int i, int j);
+
+    vector<edge> getEdges(node n);
+    vector<int> recursiveDFS(const graph g);
+    vector<int> recursiveDFS(graph &g, node current, node goal);
+
+    int addNode(NodeWeight w = 0);
+    int addNode(node n);
+
+    void setEdgeWeight(int i, int j, EdgeWeight w = 0);
+    EdgeWeight getEdgeWeight(int i, int j) const;
+
+    NodeWeight getTotalNodeWeight();
+    EdgeWeight getTotalEdgeWeight();
+
+    void setNodeWeight(int i, NodeWeight w = 0);
+    NodeWeight getNodeWeight(int i) const;
+
+    bool isEdge(NodeType i, NodeType j) const;
+    int numNodes() const;
+    int numEdges() const;
+
+    node &getNode(int);
+    const node &getNode(int) const;
+    edge &getEdge(int i, int j);
+    const edge &getEdge(int i, int j) const;
+
+    void printNodes() const;
+    void printEdges() const;
+
+    void mark(int i);
+    void mark(int i, int j);
+    void unMark(int i);
+    void unMark(int i, int j);
+    bool isMarked(int i) const;
+    bool isMarked(int i, int j) const;
+    void clearMark();
+    bool allNodesMarked();
+
+    void visit(int i);
+    void visit(int i, int j);
+    void unVisit(int i);
+    void unVisit(int i, int j);
+    bool isVisited(int i, int j) const;
+    bool isVisited(int i) const;
+    void clearVisit();
+    bool allNodesVisited();
+
+    vector<int> findPath(int, int);
+    vector<int> findPath(); //starter function for other findPath()
+    bool getNeighbor(node currNode, node &neighbor);
+
+
+	vector<int> shortPathDij(int, int);
+	vector<int> SPDij();
+
+private:
+    matrix<edge> edges;
+    vector<node> nodes;
+    int NumEdges;
+
+};
+
+graph::graph()
+    : edges(0, 0), nodes(0)
+// Constructor that creates an empty graph. graph containing n nodes and no edges.
+{
+    NumEdges = 0;
+}
+
+graph::graph(int n)
+// Constructor that creates a graph containing n nodes and no edges.
+// Edges and nodes are initialized by their constructors.
+{
+    for (int i = 0; i < n; i++)
+    {
+        addNode();
+    }
+
+    NumEdges = 0;
+}
+
+graph::graph(ifstream &fin)
+// Construct a new graph using the data in fin.
+{
+    int n, i, j, w;
+    fin >> n;
+
+    // Add nodes.
+    for (int i = 0; i < n; i++)
+    {
+        addNode();
+    }
+
+    NumEdges = 0;
+
+    while (fin.peek() != '.')
+    {
+        fin >> i >> j >> w;
+        addEdge(i, j, w);
+    }
+}
+
+graph::graph(const graph &g)
+// Graph copy constructor.
+{
+    NumEdges = 0;
+
+    // Create a temporary node to pass to nodes::resize to initialize
+    // new nodes.  This avoids the exception that is thrown by
+    // node::setId which is called by the node copy constructor.  The
+    // temporary node is overwritten later in this function.
+
+    node tempNode;
+    tempNode.setId(0);
+
+    nodes.resize(g.numNodes(), tempNode);
+    edges.resize(g.numNodes(), g.numNodes());
+
+    // Copy the nodes using the overloaded assignment operator.
+    for (int i = 0; i < numNodes(); i++)
+    {
+        nodes[i] = g.nodes[i];
+    }
+
+    // Copy the edges using the overloaded assignment operator.
+    for (int i = 0; i < numNodes(); i++)
+        for (int j = 0; j < numNodes(); j++)
+        {
+            edges[i][j] = g.edges[i][j];
+        }
+}
+
+graph &graph::operator=(const graph &g)
+// Graph assignment operator.
+{
+    // Create a temporary node to pass to nodes::resize to initialize
+    // new nodes.  This avoids the exception that is thrown by
+    // node::setId which is called by the node copy constructor.  The
+    // temporary node is overwritten later in this function.
+
+    node tempNode;
+    tempNode.setId(0);
+
+    nodes.resize(g.numNodes(), tempNode);
+    edges.resize(g.numNodes(), g.numNodes());
+
+    // Copy the nodes.
+    for (int i = 0; i < numNodes(); i++)
+    {
+        nodes[i] = g.nodes[i];
+    }
+
+    // Copy the edges.
+    for (int i = 0; i < numNodes(); i++)
+        for (int j = 0; j < numNodes(); j++)
+        {
+            edges[i][j] = g.edges[i][j];
+        }
+
+    return *this;
+}
+
+int graph::addNode(NodeWeight w)
+// Add a new node with weight w.  Also increase the size of the edges
+// matrix.  Return the index of the new node.
+{
+    node n;
+    n.setNode(numNodes(), w);
+    nodes.push_back(n);
+
+    edges.resize(numNodes(), numNodes());
+    return numNodes() - 1;
+}
+
+int graph::addNode(node n)
+// Add a new node that is a copy of node n (note that the node is
+// passed by value).  Also increase the size of the edges matrix.
+// Return the index of the new node.
+{
+    nodes.push_back(n);
+
+    edges.resize(numNodes(), numNodes());
+    return numNodes() - 1;
+}
+
+void graph::addEdge(int i, int j, NodeWeight w, string dir)
+// Add an edge of weight w from node i to node j.  Throws an exception
+// if i or j is too small or large.  Does not allow duplicate edges
+// to be added.
+{
+    if (i < 0 || i >= numNodes() || j < 0 || j >= numNodes())
+    {
+        throw rangeError("Bad value in graph::addEdge");
+    }
+
+    if (!isEdge(i, j))
+    {
+        edges[i][j] = edge(i, j, w, dir);
+    }
+
+    NumEdges++;
+}
+
+void graph::removeEdge(int i, int j)
+// Remove the edge between node i and node j.  Throws an exception if
+// i or j is too large or too small, or if the edge does not exist.
+{
+    if (i < 0 || i >= numNodes() || j < 0 || j >= numNodes())
+    {
+        throw rangeError("Bad value in graph::removeEdge");
+    }
+
+    if (!isEdge(i, j))
+    {
+        throw rangeError("Edge does not exist in graph::removeEdge");
+    }
+
+
+    edges[i][j].setInvalid();
+    NumEdges--;
+}
+
+EdgeWeight graph::getEdgeWeight(int i, int j) const
+// Return the weight of the edge between node i and node j. Throws an
+// exception if i or j is too small or too large, or if the edge does
+// not exist.
+{
+    if (i < 0 || i >= numNodes() || j < 0 || j >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getEdgeWeight");
+    }
+
+    if (!isEdge(i, j))
+    {
+        throw rangeError("Edge does not exist in graph::getEdgeWeight");
+    }
+
+    return edges[i][j].getWeight();
+}
+
+void graph::setEdgeWeight(int i, int j, EdgeWeight w)
+// Sets the weight of the arc/edge from node i to node j to w.  Throws
+// an exception if ir or j is too small or too large, or if the edge
+// does not exist.
+{
+    if (i < 0 || i >= numNodes() || j < 0 || j >= numNodes())
+    {
+        throw rangeError("Bad value in graph::setEdgeWeight");
+    }
+
+    edges[i][j].setWeight(w);
+}
+
+NodeWeight graph::getNodeWeight(int i) const
+// Returns the weight of node i.  Throws an exception if i is too
+// small or too large.
+{
+    if (i < 0 || i >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getNodeWeight");
+    }
+
+    return nodes[i].getWeight();
+}
+
+void graph::setNodeWeight(int i, NodeWeight w)
+// Sets the weight of node i to w.  Throws an exception if i is too
+// small or too large.
+{
+    if (i < 0 || i >= numNodes())
+    {
+        throw rangeError("Bad value in graph::setNodeWeight");
+    }
+
+    nodes[i].setWeight(w);
+}
+
+NodeWeight graph::getTotalNodeWeight()
+// Return the total node weight.
+{
+    NodeWeight weight = 0;
+
+    for (int i = 0; i < numNodes(); i++)
+    {
+        weight = weight + nodes[i].getWeight();
+    }
+
+    return weight;
+}
+
+EdgeWeight graph::getTotalEdgeWeight()
+// Return the total edge weight.
+{
+    EdgeWeight weight = 0;
+
+    for (int i = 0; i < numNodes(); i++)
+        for (int j = 0; j < numNodes(); j++)
+            if (isEdge(i, j))
+            {
+                weight = weight + edges[i][j].getWeight();
+            }
+
+    return weight;
+}
+
+bool graph::isEdge(NodeType i, NodeType j) const
+// Return true if there is an arc/edge from node i to node j, and
+// false otherwise.  Throws an exception if i is too small or too
+// large.
+{
+    if (i < 0 || i >= numNodes() || j < 0 || j >= numNodes())
+    {
+        throw rangeError("Bad value in graph::isEdge");
+    }
+
+    return edges[i][j].isValid();
+}
+
+int graph::numNodes() const
+// Return the number of nodes.
+{
+    return nodes.size();
+}
+
+int graph::numEdges() const
+// Return the number of edges.
+{
+    return NumEdges;
+}
+
+void graph::printNodes() const
+// Print all nodes.
+{
+    cout << "Num nodes: " << numNodes() << endl;
+
+    for (int i = 0; i < numNodes(); i++)
+    {
+        cout << getNode(i);
+    }
+}
+
+void graph::printEdges() const
+// Print edge information about the graph.
+{
+    cout << "Num edges: " << numEdges() << endl;
+
+    for (int i = 0; i < numNodes(); i++)
+        for (int j = 0; j < numNodes(); j++)
+        {
+            if (edges[i][j].isValid())
+            {
+                cout << getEdge(i, j);
+            }
+        }
+}
+
+ostream &operator<<(ostream &ostr, const graph &g)
+// Print all information about the graph.
+{
+    cout << "------------------------------------------------" << endl;
+    g.printNodes();
+    cout << endl;
+    g.printEdges();
+    cout << endl;
+
+    return ostr;
+}
+
+node &graph::getNode(int i)
+// Return a reference to the ith node.  Throws an exception if i is
+// too small or too large.
+{
+    if (i < 0 || i >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getNode");
+    }
+
+    return nodes[i];
+}
+
+const node &graph::getNode(int i) const
+// Return a reference to the ith node.  Throws an exception if i is
+// too small or too large.
+{
+    if (i < 0 || i >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getNode");
+    }
+
+    return nodes[i];
+}
+
+edge &graph::getEdge(int i, int j)
+// Return a reference to the edge connecting nodes i and j.  If i is
+// too small or too large, or if the edge does not exist, throws an
+// exception.
+{
+    if (i < 0 || i >= numNodes() || j < 0 || j >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getEdge");
+    }
+
+    if (!isEdge(i, j))
+    {
+        throw rangeError("Edge does not exist in graph::getEdge");
+    }
+
+    return edges[i][j];
+}
+
+const edge &graph::getEdge(int i, int j) const
+// Return a reference to the edge connecting nodes i and j.  If i is
+// too small or too large, or if the edge does not exist, throws an
+// exception.
+{
+    if (i < 0 || i >= numNodes() || j < 0 || j >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getEdge");
+    }
+
+    if (!isEdge(i, j))
+    {
+        throw rangeError("Edge does not exist in graph::getEdge");
+    }
+
+    return edges[i][j];
+}
+
+void graph::mark(int i)
+// Mark node i.  Throws an exception if i is too large or too small.
+{
+    if (i < 0 || i >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getEdge");
+    }
+
+    nodes[i].mark();
+}
+
+void graph::mark(int i, int j)
+// Mark edge (i,j).  Throws an exception if (i,j) is not an edge.
+{
+    if (!isEdge(i, j))
+    {
+        throw rangeError("Bad value in graph::mark");
+    }
+
+    edges[i][j].mark();
+}
+
+void graph::unMark(int i)
+// unMark node i.  Throws an exception if i is too large or too small.
+{
+    if (i < 0 || i >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getEdge");
+    }
+
+    nodes[i].unMark();
+}
+
+void graph::unMark(int i, int j)
+// unMark edge (i,j).  Throws an exception if (i,j) is not an edge.
+{
+    if (!isEdge(i, j))
+    {
+        throw rangeError("Bad value in graph::unMark");
+    }
+
+    edges[i][j].unMark();
+}
+
+bool graph::isMarked(int i) const
+// Return true if node i is marked.  Otherwise return false.  Throws an
+// exception if i is too large or too small.
+{
+    if (i < 0 || i >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getEdge");
+    }
+
+    return nodes[i].isMarked();
+}
+
+bool graph::isMarked(int i, int j) const
+// Return true if edge (i,j) node is marked.  Otherwise return false.
+// Throws an exception if (i,j) is not an edge.
+{
+    if (!isEdge(i, j))
+    {
+        throw rangeError("Bad value in graph::isMarked");
+    }
+
+    return edges[i][j].isMarked();
+}
+
+void graph::clearMark()
+// Set all nodes and edges as unmarked.
+{
+    for (int i = 0; i < numNodes(); i++)
+    {
+        nodes[i].unMark();
+    }
+
+    for (int i = 0; i < numNodes(); i++)
+        for (int j = 0; j < numNodes(); j++)
+            if (isEdge(i, j))
+            {
+                edges[i][j].unMark();
+            }
+}
+
+void graph::visit(int i)
+// Mark node i as visited.  Throws an exception if i is too large or
+// too small.
+{
+    if (i < 0 || i >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getEdge");
+    }
+
+    nodes[i].visit();
+}
+
+void graph::visit(int i, int j)
+// Mark edge (i,j) as visited.  Throws an exception (i,j) is not an
+// edge.
+{
+    if (!isEdge(i, j))
+    {
+        throw rangeError("Bad value in graph::visite");
+    }
+
+    edges[i][j].visit();
+}
+
+void graph::unVisit(int i)
+// Set node i as unvisited.  Throws an exception if i is too large or
+// too small.
+{
+    if (i < 0 || i >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getEdge");
+    }
+
+    nodes[i].unVisit();
+}
+
+void graph::unVisit(int i, int j)
+// Set edge (i,j) as unvisited.  Throws an exception if (i,j) is not
+// an edge.
+{
+    if (!isEdge(i, j))
+    {
+        throw rangeError("Bad value in graph::unVisit");
+    }
+
+    edges[i][j].unVisit();
+}
+
+bool graph::isVisited(int i) const
+// Return true if node has been visited.  Otherwise return false.  Throws an
+// exception if i is too large or too small.
+{
+    if (i < 0 || i >= numNodes())
+    {
+        throw rangeError("Bad value in graph::getEdge");
+    }
+
+    return nodes[i].isVisited();
+}
+
+bool graph::isVisited(int i, int j) const
+// Return true if edge (i,j) has been visited.  Otherwise return
+// false.  Throws an exception if (i,j) is not an edge.
+{
+    if (!isEdge(i, j))
+    {
+        throw rangeError("Bad value in graph::isVisited");
+    }
+
+    return edges[i][j].isVisited();
+}
+
+void graph::clearVisit()
+// Set all nodes and edges as unvisited.
+{
+    for (int i = 0; i < numNodes(); i++)
+    {
+        nodes[i].unVisit();
+    }
+
+    for (int i = 0; i < numNodes(); i++)
+        for (int j = 0; j < numNodes(); j++)
+            if (isEdge(i, j))
+            {
+                unVisit(i, j);
+            }
+}
+
+bool graph::allNodesVisited()
+// Return true if all nodes have been visited.  Otherwise return
+// false.
+{
+    for (int i = 0; i < numNodes(); i++)
+        if (!isVisited(i))
+        {
+            return false;
+        }
+
+    return true;
+}
+
+bool graph::allNodesMarked()
+// Return true if all nodes have been marked.  Otherwise return
+// false.
+{
+    for (int i = 0; i < numNodes(); i++)
+        if (!isMarked(i))
+        {
+            return false;
+        }
+
+    return true;
+}
+
+vector<edge> graph::getEdges(node n)
+{
+    vector<edge> result;
+
+    for (int i = 0; i < nodes.size(); i++)
+    {
+        if (isEdge(n.getId(), i))
+        {
+            result.push_back(edges[n.getId()][i]);
+        }
+    }
+
+    return result;
+}
+
+//Searches a graph for a DFS using recursion
+//returns a reversed vector of integers indicating the node values
+vector<int> graph::recursiveDFS(const graph g)
+{
+    //clear existing nodes
+    graph base = g;
+    base.clearVisit();
+
+	//call recursive DFS inplementation
+    vector<int> finalPath = recursiveDFS(base, g.getNode(0), nodes.back());
+
+	//push the start into the vector
+    finalPath.push_back(0);
+
+	//return the final path.
+    return finalPath;
+}
+
+//Worker function for the recursive DFS using recursion
+vector<int> graph::recursiveDFS(graph &g, node current, node goal)
+{
+	//result vector.
+    vector<int> result;
+
+	//if we found the end, start building result list
+    if (current.getId() == goal.getId())
+    {
+        result.push_back(goal.getId());
+        return result;
+    }
+
+	//get the list of list of edges for the current node.
+    vector<edge> edges = g.getEdges(current);
+
+	//iterate through the list of edges
+    for (int i = 0; i < edges.size(); i++)
+    {
+        //get the node
+        node testNode = g.getNode(edges[i].getDest());
+
+        //if the note is visited try the next
+        if (testNode.isVisited())
+        {
+            continue;
+        }
+
+        //Mark node visited
+        g.visit(testNode.getId());
+
+        //recurse
+        result = recursiveDFS(g, testNode, goal);
+
+		//if we are done searching, the result size will be > 0
+        if (result.size() != 0)
+        {
+            //if found, print out node, and return
+			//prevent the final node from being doubleadded
+			if (testNode.getId() != goal.getId())
+				result.push_back(testNode.getId());
+			//add current node to result and return the vector so far.
+            return result;
+        }
+
+        //else continue through edges
+    }
+
+    //no suitable node found to continue
+    return result;
+}
+
+vector<int> graph::findPath()
+//This function calls findPath with the top left, and bottom right corners of
+//the maze as arguments
+{
+    int target = numNodes() - 1;
+    return findPath(0, target);
+}
+
+vector<int> graph::findPath(int startNode, int targetNode)
+//This function finds a path through the maze using non-recursive DFS
+{
+    stack<int> dfs; //stack of vertices for dfs
+
+    vector<int> path; //stores the path
+
+    //push initial node and mark as visited so stack not empty
+    dfs.push(startNode);
+    nodes[startNode].visit();
+
+	//initialize path with starting node
+	path.push_back(startNode);
+
+
+    node nextNode; //stores found neighbor
+
+    while (!dfs.empty()) //keep looping until solution found or impossible
+    {
+        if (dfs.top() == targetNode) //puzzle solved
+        {
+            //cout << "Path Found with " << path.size() << " Steps:" << endl;
+
+			//path reversed to use print function created for recursive method.
+			//TODO: find a neater solution, even though this works
+            vector<int> reversePath;
+            reverseVector(path, reversePath);
+            return reversePath;
+        } //endif
+
+		//neighbor found, but not solved yet
+        else if (getNeighbor(getNode(dfs.top()), nextNode))
+        {
+            //string dir = edges[dfs.top()][nextNode.getId()].getDirection();
+            path.push_back(nextNode.getId());
+
+            //push a neighbor of the top to the stack
+            dfs.push(nextNode.getId());
+			//mark as visited
+            nodes[dfs.top()].visit();
+        } //end else if
+
+        else //no neighbors found
+        {
+            dfs.pop();
+            path.pop_back();
+        }//end else
+
+    } //end while loop
+
+    cout << "Path Not Found!" << endl;
+
+	//return incomplete path if fails
+    vector<int> reversePath;
+    reverseVector(path, reversePath);
+    return reversePath;
+} //end function
+
+void reverseVector(vector<int> &forwards, vector<int> &reverse)
+//simple function to reverse a vector.  This is needed because recursive and
+//non-recursive algorithms return path in opposite order and one needed to be
+//reversed to use the print function
+{
+    if (forwards.size() == 0)
+    {
+        return;
+    }
+    else //original not empty yet
+    {
+        reverse.push_back(forwards.back());
+        forwards.pop_back();
+		//recursively call this function
+        reverseVector(forwards, reverse);
+    }
+}//end function
+
+bool graph::getNeighbor(node currNode, node &neighbor)
+//This function finds a valid neighbor to the square passed, and returns the
+//neighbor by reference
+{
+    int currId = currNode.getId();
+    edge currEdge;
+
+    for (int c = 0; c < numNodes(); c++)
+    {
+        currEdge = edges[currId][c];
+
+        //don't return edges to self
+        if (c == currId)
+        {
+            continue;
+        }
+
+        //check if edge is valid, and next node is unvisited
+        if (currEdge.isValid() && !getNode(c).isVisited() && !getNode(c).isMarked())
+        {
+            //return node by reference
+            neighbor = getNode(c);
+            //true means a neighbor was found and returned
+            return true;
+        }
+    }
+
+    return false;
+}
+
+class compare
+//Single-function class containing the comparison function used by dijkstra's
+//algorithm to set up and re-sort the priority queue
+{
+	public:
+	bool operator() (node *first,node *second)
+	{
+		return (*first).getWeight() > (*second).getWeight();
+	}
+};
+
+vector<int> graph::shortPathDij(int startNode, int targetNode)
+//Function to find shortest path through graph using Dijkstra's algorithm
+{
+	//infrastructure
+	vector<int> parents; //child is index, parent is value at index
+	parents.resize(nodes.size()); //make sure parent for every node
+	vector<int> path; //vector to store path of nodes to send to print func
+	node neighbor; //to be passed by reference to getNeighbor function
+	node* v; //pointer to the current node to be used after pop
+
+	//Store priority queue as pointers so that all calculations are done on
+	//nodes in the actual graph, rather than on shadow copies for consistancy
+	priority_queue<node*, vector<node*>, compare> pq;
+
+	//set weight of startnode to zero
+	nodes[0].setWeight(0);
+	//visit startnode
+	nodes[0].visit();
+	//push startnode into queue
+	pq.push(&nodes[0]);
+
+	 // Mark all V as unvisited and set shortest path to infinity
+	for (int i=1; i<nodes.size(); i++)
+	{
+		nodes[i].unVisit(); //unvisit all nodes except first node
+		nodes[i].setWeight(INT_MAX); //set weight of all nodes to infinity
+		pq.push(&nodes[i]); //push all nodes into pq
+	}
+
+	while(!pq.empty()) //iterate while pq not empty
+	{
+
+		//When member values are updated, the priority queue does not
+		//automatically resort.  To force the pq to resort, the make_heap
+		//function used automatically in the pq constructor is called here
+		//manually on the address range of the pq.  This function runs in 0(n)
+		//time, which is theoretically the limit of what is possible to run a
+		//heapify function of this type.  The third argument of this function is
+		//the comparison function used to build the heap.
+		make_heap(const_cast<node**>(&pq.top()),
+				const_cast<node**>(&pq.top())+pq.size(),
+				compare());
+
+
+		//pop from the pq after setting v equal to the old top
+		v = pq.top();
+		pq.pop();
+
+		if((*v).getId() == targetNode) //if maze solved
+		{
+			int current = targetNode; //set intermediate variable for current
+
+			//push final node into print queue, then recursively find its
+			//parent, pushing each node on the path into the print queue until
+			//the start node is reached.  Print function prints in reverse as
+			//is, so this will handle reversing the order
+			while(current != startNode)
+			{
+				path.push_back(current);
+				current = parents[current];
+			}
+			path.push_back(current); //push back final node into path
+
+			//when function complete, reset all nodes
+			for (int i=0; i<nodes.size(); i++)
+			{
+				nodes[i].unMark();
+				nodes[i].unVisit();
+				nodes[i].setWeight(0);
+			}
+
+			//print number of moves in shortest path for user
+			cout<<"Shortest Path Found With "<<path.size()-1<<" moves."<<endl;
+			return path; //return path vector to print function
+		}
+
+		(*v).visit(); //visit current node
+
+		int newWeight = INT_MAX; //initialize newWeight
+		while(getNeighbor((*v), neighbor)) //for all neighbors of top
+		{
+			nodes[neighbor.getId()].mark(); //mark neighbor so not found again
+
+			//calculate new shortest path, assuming all edges have weight 1, and
+			//store as nodeWeight if less than old weight.  If updated, assign
+			//new parent node
+			newWeight = (*v).getWeight() + 1;
+			if (newWeight < neighbor.getWeight())
+			{
+				nodes[neighbor.getId()].setWeight(newWeight);
+				parents[neighbor.getId()] = (*v).getId();
+			}
+		}//end loop over neighbors
+	}//end loop while pq is not empty
+
+
+	//handle impossible puzzles/unseen errors
+	cout<<"Dijkstra's Algorithm Failed..."<<endl;
+	return parents;
+} //end function
+
+vector<int> graph::SPDij()
+//starter function for dijkstra's algorithm calls the function on the whole maze
+{
+	int stnode = 0;
+	int tarnode = nodes.size() - 1;
+	return shortPathDij(stnode, tarnode);
+}
+
+
+

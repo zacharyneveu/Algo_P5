@@ -4,6 +4,8 @@
 #include "d_except.h"
 #include <list>
 #include <stack>
+#include <queue>
+#include <cassert>
 
 using namespace std;
 
@@ -457,6 +459,10 @@ public:
     vector<int> findPath(int, int);
     vector<int> findPath(); //starter function for other findPath()
     bool getNeighbor(node currNode, node &neighbor);
+
+
+    vector<int> shortPathDij(int, int);
+    vector<int> SPDij();
 
 private:
     matrix<edge> edges;
@@ -1052,33 +1058,33 @@ vector<int> graph::recursiveDFS(const graph g)
     graph base = g;
     base.clearVisit();
 
-	//call recursive DFS inplementation
+    //call recursive DFS inplementation
     vector<int> finalPath = recursiveDFS(base, g.getNode(0), nodes.back());
 
-	//push the start into the vector
+    //push the start into the vector
     finalPath.push_back(0);
 
-	//return the final path.
+    //return the final path.
     return finalPath;
 }
 
 //Worker function for the recursive DFS using recursion
 vector<int> graph::recursiveDFS(graph &g, node current, node goal)
 {
-	//result vector.
+    //result vector.
     vector<int> result;
 
-	//if we found the end, start building result list
+    //if we found the end, start building result list
     if (current.getId() == goal.getId())
     {
         result.push_back(goal.getId());
         return result;
     }
 
-	//get the list of list of edges for the current node.
+    //get the list of list of edges for the current node.
     vector<edge> edges = g.getEdges(current);
 
-	//iterate through the list of edges 
+    //iterate through the list of edges
     for (int i = 0; i < edges.size(); i++)
     {
         //get the node
@@ -1096,14 +1102,17 @@ vector<int> graph::recursiveDFS(graph &g, node current, node goal)
         //recurse
         result = recursiveDFS(g, testNode, goal);
 
-		//if we are done searching, the result size will be > 0 
+        //if we are done searching, the result size will be > 0
         if (result.size() != 0)
         {
             //if found, print out node, and return
-			//prevent the final node from being doubleadded
-			if (testNode.getId() != goal.getId())
-				result.push_back(testNode.getId());
-			//add current node to result and return the vector so far.
+            //prevent the final node from being doubleadded
+            if (testNode.getId() != goal.getId())
+            {
+                result.push_back(testNode.getId());
+            }
+
+            //add current node to result and return the vector so far.
             return result;
         }
 
@@ -1133,8 +1142,8 @@ vector<int> graph::findPath(int startNode, int targetNode)
     dfs.push(startNode);
     nodes[startNode].visit();
 
-	//initialize path with starting node
-	path.push_back(startNode);
+    //initialize path with starting node
+    path.push_back(startNode);
 
 
     node nextNode; //stores found neighbor
@@ -1145,14 +1154,14 @@ vector<int> graph::findPath(int startNode, int targetNode)
         {
             //cout << "Path Found with " << path.size() << " Steps:" << endl;
 
-			//path reversed to use print function created for recursive method.
-			//TODO: find a neater solution, even though this works
+            //path reversed to use print function created for recursive method.
+            //TODO: find a neater solution, even though this works
             vector<int> reversePath;
             reverseVector(path, reversePath);
             return reversePath;
         } //endif
 
-		//neighbor found, but not solved yet
+        //neighbor found, but not solved yet
         else if (getNeighbor(getNode(dfs.top()), nextNode))
         {
             //string dir = edges[dfs.top()][nextNode.getId()].getDirection();
@@ -1160,7 +1169,7 @@ vector<int> graph::findPath(int startNode, int targetNode)
 
             //push a neighbor of the top to the stack
             dfs.push(nextNode.getId());
-			//mark as visited
+            //mark as visited
             nodes[dfs.top()].visit();
         } //end else if
 
@@ -1174,7 +1183,7 @@ vector<int> graph::findPath(int startNode, int targetNode)
 
     cout << "Path Not Found!" << endl;
 
-	//return incomplete path if fails
+    //return incomplete path if fails
     vector<int> reversePath;
     reverseVector(path, reversePath);
     return reversePath;
@@ -1193,7 +1202,7 @@ void reverseVector(vector<int> &forwards, vector<int> &reverse)
     {
         reverse.push_back(forwards.back());
         forwards.pop_back();
-		//recursively call this function
+        //recursively call this function
         reverseVector(forwards, reverse);
     }
 }//end function
@@ -1216,7 +1225,7 @@ bool graph::getNeighbor(node currNode, node &neighbor)
         }
 
         //check if edge is valid, and next node is unvisited
-        if (currEdge.isValid() && !getNode(c).isVisited())
+        if (currEdge.isValid() && !getNode(c).isVisited() && !getNode(c).isMarked())
         {
             //return node by reference
             neighbor = getNode(c);
@@ -1227,3 +1236,129 @@ bool graph::getNeighbor(node currNode, node &neighbor)
 
     return false;
 }
+
+class compare
+//Single-function class containing the comparison function used by dijkstra's
+//algorithm to set up and re-sort the priority queue
+{
+public:
+    bool operator()(node *first, node *second)
+    {
+        return (*first).getWeight() > (*second).getWeight();
+    }
+};
+
+vector<int> graph::shortPathDij(int startNode, int targetNode)
+//Function to find shortest path through graph using Dijkstra's algorithm
+{
+    //infrastructure
+    vector<int> parents; //child is index, parent is value at index
+    parents.resize(nodes.size()); //make sure parent for every node
+    vector<int> path; //vector to store path of nodes to send to print func
+    node neighbor; //to be passed by reference to getNeighbor function
+    node* v; //pointer to the current node to be used after pop
+
+    //Store priority queue as pointers so that all calculations are done on
+    //nodes in the actual graph, rather than on shadow copies for consistancy
+    priority_queue<node*, vector<node*>, compare> pq;
+
+    //set weight of startnode to zero
+    nodes[0].setWeight(0);
+    //visit startnode
+    nodes[0].visit();
+    //push startnode into queue
+    pq.push(&nodes[0]);
+
+    // Mark all V as unvisited and set shortest path to infinity
+    for (int i = 1; i < nodes.size(); i++)
+    {
+        nodes[i].unVisit(); //unvisit all nodes except first node
+        nodes[i].setWeight(INT_MAX); //set weight of all nodes to infinity
+        pq.push(&nodes[i]); //push all nodes into pq
+    }
+
+    while (!pq.empty()) //iterate while pq not empty
+    {
+
+        //When member values are updated, the priority queue does not
+        //automatically resort.  To force the pq to resort, the make_heap
+        //function used automatically in the pq constructor is called here
+        //manually on the address range of the pq.  This function runs in 0(n)
+        //time, which is theoretically the limit of what is possible to run a
+        //heapify function of this type.  The third argument of this function is
+        //the comparison function used to build the heap.
+        make_heap(const_cast<node**>(&pq.top()),
+                  const_cast<node**>(&pq.top()) + pq.size(),
+                  compare());
+
+
+        //pop from the pq after setting v equal to the old top
+        v = pq.top();
+        pq.pop();
+
+        if ((*v).getId() == targetNode) //if maze solved
+        {
+            int current = targetNode; //set intermediate variable for current
+
+            //push final node into print queue, then recursively find its
+            //parent, pushing each node on the path into the print queue until
+            //the start node is reached.  Print function prints in reverse as
+            //is, so this will handle reversing the order
+            while (current != startNode)
+            {
+                path.push_back(current);
+                current = parents[current];
+            }
+
+            path.push_back(current); //push back final node into path
+
+            //when function complete, reset all nodes
+            for (int i = 0; i < nodes.size(); i++)
+            {
+                nodes[i].unMark();
+                nodes[i].unVisit();
+                nodes[i].setWeight(0);
+            }
+
+            //print number of moves in shortest path for user
+            cout << "Shortest Path Found With " << path.size() - 1 << " moves." << endl;
+            return path; //return path vector to print function
+        }
+
+        (*v).visit(); //visit current node
+
+        int newWeight = INT_MAX; //initialize newWeight
+
+        while (getNeighbor((*v), neighbor)) //for all neighbors of top
+        {
+            nodes[neighbor.getId()].mark(); //mark neighbor so not found again
+
+            //calculate new shortest path, assuming all edges have weight 1, and
+            //store as nodeWeight if less than old weight.  If updated, assign
+            //new parent node
+            newWeight = (*v).getWeight() + 1;
+
+            if (newWeight < neighbor.getWeight())
+            {
+                nodes[neighbor.getId()].setWeight(newWeight);
+                parents[neighbor.getId()] = (*v).getId();
+            }
+        }//end loop over neighbors
+    }//end loop while pq is not empty
+
+
+    //handle impossible puzzles/unseen errors
+    cout << "Dijkstra's Algorithm Failed..." << endl;
+    return parents;
+} //end function
+
+vector<int> graph::SPDij()
+//starter function for dijkstra's algorithm calls the function on the whole maze
+{
+    int stnode = 0;
+    int tarnode = nodes.size() - 1;
+    return shortPathDij(stnode, tarnode);
+}
+
+
+
