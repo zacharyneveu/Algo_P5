@@ -411,8 +411,6 @@ public:
     void removeEdge(int i, int j);
 
     vector<edge> getEdges(node n);
-    vector<int> recursiveDFS(const graph g);
-    vector<int> recursiveDFS(graph &g, node current, node goal);
 
     int addNode(NodeWeight w = 0);
     int addNode(node n);
@@ -464,7 +462,13 @@ public:
     vector<int> shortPathDij(int, int);
     vector<int> SPDij();
 
+	vector<int> recursiveDFS(const graph g);
+	vector<int> recursiveDFS(graph &g, node current, node goal);
+
+	vector<int> shortPathBFS();
+
 private:
+	vector<int> buildPred(vector<int> predNodes);
     matrix<edge> edges;
     vector<node> nodes;
     int NumEdges;
@@ -1360,5 +1364,62 @@ vector<int> graph::SPDij()
     return shortPathDij(stnode, tarnode);
 }
 
+//Computes the shortest path to the exit of the graph using BFS
+vector<int> graph::shortPathBFS() {
+	//predicesor node array
+	//The predicessor for node 8 is predNode[8]
+	vector<int> predNode(nodes.back().getId()+1, 0); 
+	//queue of nodes to be searched
+	queue<node> nodeQueue;
 
+	//clear visited nodes
+	clearVisit();
+	
 
+	//push the start not into queue
+	nodeQueue.push(getNode(0));
+
+	//While there's stuff in the queue
+	while (nodeQueue.size() != 0) {
+		//get the next node visist and remove from the queue
+		node next = nodeQueue.front();
+		visit(next.getId());
+		nodeQueue.pop();
+
+		//if the path is solved build a vector in the same format as the print
+		if (next.getId() == nodes.back().getId()) {
+			return buildPred(predNode);
+		}
+
+		//get all the nodes edges
+		vector<edge> edges = getEdges(next);
+		//for each edge
+		for (int i = 0; i < edges.size(); i++) {
+			//if the node isn't visisted, add it to the queue.
+			int targetNode = getNode(edges[i].getDest()).getId();
+			//if it isnt visited, push it in the queue and mark its predicessor
+			if (!isVisited(targetNode)) {
+				nodeQueue.push(getNode(targetNode));
+				predNode[targetNode] = next.getId();
+			}
+		}
+	}
+}
+
+//Take a vector of predicessor nodes and converts it into a format readable
+//by the print function
+vector<int> graph::buildPred(vector<int> predNode) {
+	vector<int> path;
+	//get the last node
+	int current = nodes.back().getId();
+
+	//while we are not to the first node
+	do {
+		path.push_back(current);
+		current = predNode[current];
+	} while (current != 0);
+
+	//push the front node
+	path.push_back(0);
+	return path;
+}

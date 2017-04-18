@@ -307,7 +307,10 @@ d for dijkstra's shortest path or b for bfs shorest path: ";
 			else if (mode == 'd')
 			{
 				result = g.SPDij();
-
+			}
+			else if (mode == 'b')
+			{
+				result = g.shortPathBFS();
 			}
             else
             {
